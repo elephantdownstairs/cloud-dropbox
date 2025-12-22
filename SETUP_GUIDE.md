@@ -48,7 +48,7 @@ Replace `YOUR-USERNAME` with your actual GitHub username.
 
 ## 🌐 Your CloudBox is Now Live!
 
-Your application will be hosted on GitHub's servers and accessible from anywhere. Files uploaded by anyone will be synced across all devices accessing the same URL.
+Your application will be hosted on GitHub's servers and accessible from anywhere. Each device will have its own local file storage.
 
 ## 📝 Important Notes
 
@@ -63,22 +63,30 @@ Your application will be hosted on GitHub's servers and accessible from anywhere
 
 **Important Security Notes:**
 - The PIN is stored in your **browser's local storage** (localStorage)
-- Files are stored in **shared storage** (accessible across devices)
-- This means: PIN protects your browser session, but files themselves are shared storage
-- For maximum security: Keep your CloudBox URL private + use a strong PIN
+- Files are stored in your **browser's IndexedDB** (local to each device/browser)
+- Each browser/device has its own separate file vault
+- Clearing browser data will delete your PIN and files
 
 ⚠️ **If you forget your PIN:**
 1. Open browser DevTools (F12)
 2. Go to Console tab
 3. Type: `localStorage.removeItem('cloudbox_pin_hash')`
 4. Refresh the page - you can now set a new PIN
-5. **Note**: This won't affect your uploaded files
+5. **Note**: Your files remain safe in IndexedDB
 
 ### About File Storage
-- Files are stored using the browser's persistent storage API
-- Files are **SHARED** across all users who access your CloudBox URL
-- Storage limits depend on the browser (typically 50-100MB+)
-- Perfect for personal cloud storage or trusted team sharing
+- Files are stored using **IndexedDB** (browser's local database)
+- Files are stored **locally in your browser** on each device
+- **Note**: Files are NOT synced across devices automatically (each browser has its own storage)
+- Storage limits depend on the browser (typically 50MB-10GB+)
+- Perfect for personal file storage and conversion on each device
+
+### How Cross-Device Access Works
+- Upload the same `index.html` file to GitHub Pages
+- Each device will have its **own separate file storage**
+- Files uploaded on Device A won't appear on Device B
+- The PIN and interface are the same across all devices
+- Think of it like having separate CloudBox vaults on each device
 
 ### Privacy Recommendations
 1. **For Personal Use**: Keep URL private + use a strong 4-digit PIN
@@ -197,12 +205,13 @@ Want to use your own domain? (e.g., `cloudbox.yourdomain.com`)
 ✅ **4-Digit PIN Protection** - Secure your CloudBox with a PIN code
 ✅ **Upload & Download** - Any file type, any size (within browser limits)
 ✅ **Lossless File Conversion** - Images, PDFs, Text files (100% quality)
-✅ **Cross-Device Sync** - Access from any device
+✅ **Local Storage** - Files stored securely in your browser's IndexedDB
 ✅ **No Compression** - Files stored exactly as uploaded
 ✅ **Beautiful Interface** - Modern, responsive design
 ✅ **100% Free** - Hosted on GitHub Pages forever
 ✅ **No Server Required** - Everything runs in the browser
 ✅ **Lock Feature** - Instantly lock your CloudBox when stepping away
+✅ **Privacy Focused** - All files stay on your device
 
 ## 🤝 Support
 
