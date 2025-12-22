@@ -843,17 +843,17 @@
     <div class="container">
         <div class="header">
             <div class="logo">📦 CloudBox</div>
-            <div class="tagline">Your secure file vault & converter • Access anywhere</div>
+            <div class="tagline">Your secure file vault & converter • Synced across devices</div>
             <div class="security-badge">
                 <span>🛡️</span>
-                <span>PIN Protected</span>
+                <span>PIN Protected • Cloud Synced</span>
             </div>
         </div>
         
         <div class="upload-zone" id="uploadZone">
             <div class="upload-icon">☁️</div>
             <div class="upload-text">Drop files here or click to upload</div>
-            <div class="upload-hint">All file types supported • Lossless conversion • Stored locally</div>
+            <div class="upload-hint">All file types supported • Lossless conversion • Synced to cloud</div>
             <input type="file" id="fileInput" class="file-input" multiple>
         </div>
         
@@ -916,160 +916,37 @@
         <div class="loading-text" id="loadingText">Processing...</div>
     </div>
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
-        // Global variables
-        let db = null;
-        let isDBReady = false;
+        // ⚠️ IMPORTANT: Replace with your own Firebase config
+        // Get this from: https://console.firebase.google.com/
+        // Project Settings > General > Your apps > Firebase SDK snippet > Config
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY_HERE",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
         
-        const DB_NAME = 'CloudBoxDB';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'files';
+        // Initialize Firebase
+        let database;
+        let isFirebaseReady = false;
         
-        // Initialize IndexedDB
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                if (!window.indexedDB) {
-                    reject(new Error('IndexedDB not supported in this browser'));
-                    return;
-                }
-                
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-                
-                request.onerror = () => {
-                    console.error('IndexedDB error:', request.error);
-                    reject(request.error);
-                };
-                
-                request.onsuccess = () => {
-                    db = request.result;
-                    isDBReady = true;
-                    console.log('Database initialized successfully');
-                    resolve(db);
-                };
-                
-                request.onupgradeneeded = (event) => {
-                    console.log('Creating database...');
-                    db = event.target.result;
-                    
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                        console.log('Object store created');
-                    }
-                };
-            });
-        }
-
-        function saveFile(fileData) {
-            return new Promise((resolve, reject) => {
-                if (!isDBReady || !db) {
-                    reject(new Error('Database not ready'));
-                    return;
-                }
-                
-                try {
-                    const transaction = db.transaction([STORE_NAME], 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.put(fileData);
-                    
-                    request.onsuccess = () => {
-                        console.log('File saved successfully:', fileData.name);
-                        resolve();
-                    };
-                    
-                    request.onerror = () => {
-                        console.error('Error saving file:', request.error);
-                        reject(request.error);
-                    };
-                } catch (error) {
-                    console.error('Transaction error:', error);
-                    reject(error);
-                }
-            });
-        }
-
-        function getAllFiles() {
-            return new Promise((resolve, reject) => {
-                if (!isDBReady || !db) {
-                    reject(new Error('Database not ready'));
-                    return;
-                }
-                
-                try {
-                    const transaction = db.transaction([STORE_NAME], 'readonly');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.getAll();
-                    
-                    request.onsuccess = () => {
-                        console.log('Files loaded:', request.result.length);
-                        resolve(request.result);
-                    };
-                    
-                    request.onerror = () => {
-                        console.error('Error loading files:', request.error);
-                        reject(request.error);
-                    };
-                } catch (error) {
-                    console.error('Transaction error:', error);
-                    reject(error);
-                }
-            });
-        }
-
-        function deleteFile(id) {
-            return new Promise((resolve, reject) => {
-                if (!isDBReady || !db) {
-                    reject(new Error('Database not ready'));
-                    return;
-                }
-                
-                try {
-                    const transaction = db.transaction([STORE_NAME], 'readwrite');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.delete(id);
-                    
-                    request.onsuccess = () => {
-                        console.log('File deleted:', id);
-                        resolve();
-                    };
-                    
-                    request.onerror = () => {
-                        console.error('Error deleting file:', request.error);
-                        reject(request.error);
-                    };
-                } catch (error) {
-                    console.error('Transaction error:', error);
-                    reject(error);
-                }
-            });
-        }
-
-        function getFile(id) {
-            return new Promise((resolve, reject) => {
-                if (!isDBReady || !db) {
-                    reject(new Error('Database not ready'));
-                    return;
-                }
-                
-                try {
-                    const transaction = db.transaction([STORE_NAME], 'readonly');
-                    const store = transaction.objectStore(STORE_NAME);
-                    const request = store.get(id);
-                    
-                    request.onsuccess = () => {
-                        resolve(request.result);
-                    };
-                    
-                    request.onerror = () => {
-                        console.error('Error getting file:', request.error);
-                        reject(request.error);
-                    };
-                } catch (error) {
-                    console.error('Transaction error:', error);
-                    reject(error);
-                }
-            });
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            isFirebaseReady = true;
+            console.log('Firebase initialized successfully');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            console.log('⚠️ Please configure Firebase! See instructions in the code.');
         }
 
         // Security & Authentication
@@ -1112,10 +989,7 @@
                 lockSubtitle.textContent = 'Set your 4-digit PIN';
             } else if (isSessionValid()) {
                 lockScreen.classList.add('unlocked');
-                initDB().then(() => loadFiles()).catch(err => {
-                    console.error('DB init error:', err);
-                    showToast('Database initialization failed', 'error');
-                });
+                loadFiles();
             }
         }
         
@@ -1175,13 +1049,7 @@
                 sessionStorage.setItem(SESSION_KEY, 'unlocked');
                 lockScreen.classList.add('unlocked');
                 showToast('PIN set successfully! Your CloudBox is now secure. 🎉');
-                try {
-                    await initDB();
-                    await loadFiles();
-                } catch (error) {
-                    console.error('Initialization error:', error);
-                    showToast('Error initializing database', 'error');
-                }
+                loadFiles();
             } else {
                 const storedHash = localStorage.getItem(PIN_KEY);
                 const inputHash = hashPIN(pin);
@@ -1189,13 +1057,7 @@
                 if (storedHash === inputHash) {
                     sessionStorage.setItem(SESSION_KEY, 'unlocked');
                     lockScreen.classList.add('unlocked');
-                    try {
-                        await initDB();
-                        await loadFiles();
-                    } catch (error) {
-                        console.error('Initialization error:', error);
-                        showToast('Error initializing database', 'error');
-                    }
+                    loadFiles();
                 } else {
                     showError('Incorrect PIN. Please try again.');
                     pinInputs.forEach(input => {
@@ -1318,17 +1180,13 @@
         async function handleFiles(files) {
             if (files.length === 0) return;
             
-            if (!isDBReady) {
-                showToast('Database not ready. Please wait...', 'warning');
-                try {
-                    await initDB();
-                } catch (error) {
-                    showToast('Failed to initialize database. Please refresh the page.', 'error');
-                    return;
-                }
+            if (!isFirebaseReady) {
+                showToast('⚠️ Firebase not configured! See console for setup instructions.', 'error');
+                console.error('Please configure Firebase in the code. See firebaseConfig object.');
+                return;
             }
             
-            setLoading(true, 'Uploading files...');
+            setLoading(true, 'Processing files...');
             
             try {
                 const shouldConvert = conversionToggle.checked;
@@ -1336,24 +1194,28 @@
                 
                 for (let file of files) {
                     try {
+                        let fileToUpload = file;
+                        let wasConverted = false;
+                        
                         if (shouldConvert) {
                             const canConvert = isConvertible(file);
                             if (canConvert) {
                                 setLoadingText(`Converting ${file.name}...`);
                                 const convertedFile = await convertFile(file);
                                 if (convertedFile) {
-                                    await uploadFile(convertedFile, true);
-                                    successCount++;
+                                    fileToUpload = convertedFile;
+                                    wasConverted = true;
+                                    console.log(`Converted ${file.name} to ${convertedFile.name}`);
                                 }
                             } else {
-                                showToast(`Cannot convert ${file.name} to selected format`, 'warning');
-                                await uploadFile(file, false);
-                                successCount++;
+                                showToast(`Cannot convert ${file.name} to ${outputFormat.value.toUpperCase()}`, 'warning');
                             }
-                        } else {
-                            await uploadFile(file, false);
-                            successCount++;
                         }
+                        
+                        setLoadingText(`Uploading ${fileToUpload.name}...`);
+                        await uploadFile(fileToUpload, wasConverted);
+                        successCount++;
+                        
                     } catch (fileError) {
                         console.error(`Error processing ${file.name}:`, fileError);
                         showToast(`Error uploading ${file.name}`, 'error');
@@ -1446,6 +1308,7 @@
                                 if (blob) {
                                     const newFileName = file.name.replace(/\.[^/.]+$/, `.${ext}`);
                                     const newFile = new File([blob], newFileName, { type: mimeType });
+                                    console.log(`Image converted: ${file.name} (${file.type}) → ${newFileName} (${mimeType})`);
                                     resolve(newFile);
                                 } else {
                                     reject(new Error('Failed to create blob'));
@@ -1484,6 +1347,7 @@
                             const pdfBlob = pdf.output('blob');
                             const newFileName = file.name.replace(/\.[^/.]+$/, '.pdf');
                             const newFile = new File([pdfBlob], newFileName, { type: 'application/pdf' });
+                            console.log(`PDF created: ${file.name} → ${newFileName}`);
                             resolve(newFile);
                         } catch (error) {
                             reject(error);
@@ -1506,6 +1370,7 @@
                     const textBlob = new Blob([e.target.result], { type: 'text/plain' });
                     const newFileName = file.name.replace(/\.[^/.]+$/, '.txt');
                     const newFile = new File([textBlob], newFileName, { type: 'text/plain' });
+                    console.log(`Text converted: ${file.name} → ${newFileName}`);
                     resolve(newFile);
                 };
                 
@@ -1530,10 +1395,11 @@
                             converted: wasConverted
                         };
                         
-                        await saveFile(fileData);
+                        await database.ref('files/' + fileData.id).set(fileData);
+                        console.log('File uploaded to Firebase:', fileData.name);
                         resolve();
                     } catch (error) {
-                        console.error('Save error:', error);
+                        console.error('Firebase save error:', error);
                         reject(error);
                     }
                 };
@@ -1544,17 +1410,18 @@
         }
         
         async function loadFiles() {
-            if (!isDBReady) {
-                console.log('Database not ready for loading files');
+            if (!isFirebaseReady) {
+                console.log('Firebase not ready');
                 return;
             }
             
             setLoading(true, 'Loading files...');
             
             try {
-                const files = await getAllFiles();
+                const snapshot = await database.ref('files').once('value');
+                const filesData = snapshot.val();
                 
-                if (!files || files.length === 0) {
+                if (!filesData) {
                     filesGrid.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">📁</div>
@@ -1566,10 +1433,12 @@
                     return;
                 }
                 
+                const files = Object.values(filesData);
                 files.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
                 
                 displayFiles(files);
                 fileCountEl.textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
+                console.log('Files loaded:', files.length);
             } catch (error) {
                 console.error('Error loading files:', error);
                 showToast('Error loading files: ' + error.message, 'error');
@@ -1599,7 +1468,7 @@
                         <span>${new Date(file.uploadedAt).toLocaleDateString()}</span>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-download" onclick="downloadFileById('${file.id}', '${file.name.replace(/'/g, "\\'")}')">
+                        <button class="btn btn-download" onclick="downloadFileById('${file.id}', '${file.name.replace(/'/g, "\\'")}', '${file.data.substring(0, 50)}...')">
                             ⬇️ Download
                         </button>
                         <button class="btn btn-delete" onclick="deleteFileById('${file.id}')">
@@ -1610,23 +1479,26 @@
             `).join('');
         }
         
-        async function downloadFileById(fileId, fileName) {
+        async function downloadFileById(fileId) {
             setLoading(true, 'Preparing download...');
             
             try {
-                const fileData = await getFile(fileId);
+                const snapshot = await database.ref('files/' + fileId).once('value');
+                const fileData = snapshot.val();
+                
                 if (!fileData) {
                     throw new Error('File not found');
                 }
                 
                 const link = document.createElement('a');
                 link.href = fileData.data;
-                link.download = fileName;
+                link.download = fileData.name;
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 
                 showToast('File downloaded successfully!');
+                console.log('File downloaded:', fileData.name);
             } catch (error) {
                 console.error('Download error:', error);
                 showToast('Error downloading file: ' + error.message, 'error');
@@ -1641,8 +1513,9 @@
             setLoading(true, 'Deleting file...');
             
             try {
-                await deleteFile(fileId);
+                await database.ref('files/' + fileId).remove();
                 showToast('File deleted successfully!');
+                console.log('File deleted:', fileId);
                 await loadFiles();
             } catch (error) {
                 console.error('Delete error:', error);
@@ -1659,9 +1532,8 @@
         window.downloadFileById = downloadFileById;
         window.deleteFileById = deleteFileById;
         
-        // Log initialization
         console.log('CloudBox initialized');
-        console.log('IndexedDB supported:', !!window.indexedDB);
+        console.log('Firebase ready:', isFirebaseReady);
     </script>
 </body>
 </html>
