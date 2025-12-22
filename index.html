@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CloudBox - Secure File Vault</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500;600&display=swap');
         
         * {
             margin: 0;
@@ -28,7 +28,7 @@
         }
         
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
@@ -50,7 +50,6 @@
             z-index: 0;
         }
         
-        /* Lock Screen Styles */
         .lock-screen {
             position: fixed;
             top: 0;
@@ -83,9 +82,9 @@
         }
         
         .lock-title {
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
             font-size: 36px;
-            font-weight: 700;
+            font-weight: 900;
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -116,7 +115,7 @@
             font-size: 32px;
             font-weight: 700;
             color: var(--text-primary);
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
             transition: all 0.3s ease;
         }
         
@@ -142,18 +141,12 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
         
         .unlock-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(0, 255, 136, 0.3);
-        }
-        
-        .unlock-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: scale(1);
         }
         
         .setup-mode {
@@ -182,10 +175,9 @@
             color: var(--danger);
             font-size: 14px;
             margin-top: 15px;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
         }
         
-        /* Main App Styles */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -201,9 +193,9 @@
         }
         
         .logo {
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
             font-size: 48px;
-            font-weight: 700;
+            font-weight: 900;
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -215,7 +207,6 @@
         .tagline {
             color: var(--text-secondary);
             font-size: 16px;
-            font-family: 'Space Mono', monospace;
         }
         
         .security-badge {
@@ -228,7 +219,7 @@
             border: 1px solid var(--accent-primary);
             border-radius: 20px;
             font-size: 13px;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
             color: var(--accent-primary);
         }
         
@@ -243,7 +234,7 @@
             color: var(--text-primary);
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-size: 14px;
             z-index: 100;
         }
@@ -419,7 +410,7 @@
             font-size: 13px;
             color: var(--text-secondary);
             margin-bottom: 8px;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
         }
         
         .select-wrapper {
@@ -434,7 +425,7 @@
             border-radius: 10px;
             color: var(--text-primary);
             font-size: 14px;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
             appearance: none;
             transition: all 0.3s ease;
@@ -483,7 +474,7 @@
         .files-title {
             font-size: 24px;
             font-weight: 700;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
         }
         
         .storage-info {
@@ -494,7 +485,7 @@
             background: var(--bg-secondary);
             border-radius: 12px;
             font-size: 14px;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
         }
         
         .file-count {
@@ -564,7 +555,7 @@
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
         }
         
         .file-name {
@@ -581,7 +572,7 @@
             color: var(--text-secondary);
             font-size: 12px;
             margin-bottom: 15px;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
         }
         
         .file-actions {
@@ -598,7 +589,7 @@
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
         
         .btn-download {
@@ -651,7 +642,7 @@
             transform: translateX(400px);
             transition: transform 0.3s ease;
             z-index: 1000;
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
             font-size: 14px;
             max-width: 350px;
         }
@@ -702,7 +693,7 @@
         
         .loading-text {
             color: var(--text-primary);
-            font-family: 'Space Mono', monospace;
+            font-family: 'Orbitron', monospace;
             font-size: 14px;
         }
         
@@ -820,7 +811,6 @@
     </style>
 </head>
 <body>
-    <!-- Lock Screen -->
     <div class="lock-screen" id="lockScreen">
         <div class="lock-container">
             <div class="lock-icon">🔒</div>
@@ -848,7 +838,6 @@
         </div>
     </div>
     
-    <!-- Main App -->
     <button class="lock-btn" id="lockBtn">🔒 Lock</button>
     
     <div class="container">
@@ -864,7 +853,7 @@
         <div class="upload-zone" id="uploadZone">
             <div class="upload-icon">☁️</div>
             <div class="upload-text">Drop files here or click to upload</div>
-            <div class="upload-hint">All file types supported • Lossless conversion • Sync across devices</div>
+            <div class="upload-hint">All file types supported • Lossless conversion • Stored locally</div>
             <input type="file" id="fileInput" class="file-input" multiple>
         </div>
         
@@ -901,7 +890,7 @@
                 </div>
                 <div class="conversion-note">
                     ✨ <strong>No Compression:</strong> All conversions preserve maximum quality. 
-                    PNG and WebP-100 are completely lossless. JPEG-100 is near-lossless with minimal artifacts.
+                    PNG and WebP-100 are completely lossless. JPEG-100 is near-lossless.
                 </div>
             </div>
         </div>
@@ -930,6 +919,159 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <script>
+        // Global variables
+        let db = null;
+        let isDBReady = false;
+        
+        const DB_NAME = 'CloudBoxDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'files';
+        
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                if (!window.indexedDB) {
+                    reject(new Error('IndexedDB not supported in this browser'));
+                    return;
+                }
+                
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    console.error('IndexedDB error:', request.error);
+                    reject(request.error);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    isDBReady = true;
+                    console.log('Database initialized successfully');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    console.log('Creating database...');
+                    db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        console.log('Object store created');
+                    }
+                };
+            });
+        }
+
+        function saveFile(fileData) {
+            return new Promise((resolve, reject) => {
+                if (!isDBReady || !db) {
+                    reject(new Error('Database not ready'));
+                    return;
+                }
+                
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.put(fileData);
+                    
+                    request.onsuccess = () => {
+                        console.log('File saved successfully:', fileData.name);
+                        resolve();
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Error saving file:', request.error);
+                        reject(request.error);
+                    };
+                } catch (error) {
+                    console.error('Transaction error:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        function getAllFiles() {
+            return new Promise((resolve, reject) => {
+                if (!isDBReady || !db) {
+                    reject(new Error('Database not ready'));
+                    return;
+                }
+                
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.getAll();
+                    
+                    request.onsuccess = () => {
+                        console.log('Files loaded:', request.result.length);
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Error loading files:', request.error);
+                        reject(request.error);
+                    };
+                } catch (error) {
+                    console.error('Transaction error:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        function deleteFile(id) {
+            return new Promise((resolve, reject) => {
+                if (!isDBReady || !db) {
+                    reject(new Error('Database not ready'));
+                    return;
+                }
+                
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.delete(id);
+                    
+                    request.onsuccess = () => {
+                        console.log('File deleted:', id);
+                        resolve();
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Error deleting file:', request.error);
+                        reject(request.error);
+                    };
+                } catch (error) {
+                    console.error('Transaction error:', error);
+                    reject(error);
+                }
+            });
+        }
+
+        function getFile(id) {
+            return new Promise((resolve, reject) => {
+                if (!isDBReady || !db) {
+                    reject(new Error('Database not ready'));
+                    return;
+                }
+                
+                try {
+                    const transaction = db.transaction([STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const request = store.get(id);
+                    
+                    request.onsuccess = () => {
+                        resolve(request.result);
+                    };
+                    
+                    request.onerror = () => {
+                        console.error('Error getting file:', request.error);
+                        reject(request.error);
+                    };
+                } catch (error) {
+                    console.error('Transaction error:', error);
+                    reject(error);
+                }
+            });
+        }
+
         // Security & Authentication
         const PIN_KEY = 'cloudbox_pin_hash';
         const SESSION_KEY = 'cloudbox_session';
@@ -946,7 +1088,6 @@
             document.getElementById('pin4')
         ];
         
-        // Simple hash function for PIN
         function hashPIN(pin) {
             let hash = 0;
             for (let i = 0; i < pin.length; i++) {
@@ -956,61 +1097,55 @@
             return hash.toString();
         }
         
-        // Check if PIN is set
         function isPINSet() {
             return localStorage.getItem(PIN_KEY) !== null;
         }
         
-        // Check if session is valid
         function isSessionValid() {
             const session = sessionStorage.getItem(SESSION_KEY);
             return session === 'unlocked';
         }
         
-        // Initialize lock screen
         function initLockScreen() {
             if (!isPINSet()) {
                 setupMode.style.display = 'block';
                 lockSubtitle.textContent = 'Set your 4-digit PIN';
             } else if (isSessionValid()) {
                 lockScreen.classList.add('unlocked');
+                initDB().then(() => loadFiles()).catch(err => {
+                    console.error('DB init error:', err);
+                    showToast('Database initialization failed', 'error');
+                });
             }
         }
         
-        // PIN input handling
         pinInputs.forEach((input, index) => {
             input.addEventListener('input', (e) => {
                 const value = e.target.value;
                 
-                // Only allow numbers
                 if (!/^\d$/.test(value)) {
                     e.target.value = '';
                     return;
                 }
                 
-                // Remove error styling
                 input.classList.remove('error');
                 errorMessage.textContent = '';
                 
-                // Move to next input
                 if (value && index < 3) {
                     pinInputs[index + 1].focus();
                 }
             });
             
             input.addEventListener('keydown', (e) => {
-                // Move to previous input on backspace
                 if (e.key === 'Backspace' && !input.value && index > 0) {
                     pinInputs[index - 1].focus();
                 }
                 
-                // Submit on Enter
                 if (e.key === 'Enter') {
                     handleUnlock();
                 }
             });
             
-            // Paste handling
             input.addEventListener('paste', (e) => {
                 e.preventDefault();
                 const pastedData = e.clipboardData.getData('text');
@@ -1027,8 +1162,7 @@
             });
         });
         
-        // Handle unlock
-        function handleUnlock() {
+        async function handleUnlock() {
             const pin = pinInputs.map(input => input.value).join('');
             
             if (pin.length !== 4) {
@@ -1037,20 +1171,31 @@
             }
             
             if (!isPINSet()) {
-                // Setup new PIN
                 localStorage.setItem(PIN_KEY, hashPIN(pin));
                 sessionStorage.setItem(SESSION_KEY, 'unlocked');
                 lockScreen.classList.add('unlocked');
                 showToast('PIN set successfully! Your CloudBox is now secure. 🎉');
+                try {
+                    await initDB();
+                    await loadFiles();
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    showToast('Error initializing database', 'error');
+                }
             } else {
-                // Verify PIN
                 const storedHash = localStorage.getItem(PIN_KEY);
                 const inputHash = hashPIN(pin);
                 
                 if (storedHash === inputHash) {
                     sessionStorage.setItem(SESSION_KEY, 'unlocked');
                     lockScreen.classList.add('unlocked');
-                    loadFiles();
+                    try {
+                        await initDB();
+                        await loadFiles();
+                    } catch (error) {
+                        console.error('Initialization error:', error);
+                        showToast('Error initializing database', 'error');
+                    }
                 } else {
                     showError('Incorrect PIN. Please try again.');
                     pinInputs.forEach(input => {
@@ -1062,12 +1207,10 @@
             }
         }
         
-        // Show error on lock screen
         function showError(message) {
             errorMessage.textContent = message;
         }
         
-        // Lock button handler
         lockBtn.addEventListener('click', () => {
             sessionStorage.removeItem(SESSION_KEY);
             lockScreen.classList.remove('unlocked');
@@ -1079,10 +1222,8 @@
             pinInputs[0].focus();
         });
         
-        // Unlock button handler
         unlockBtn.addEventListener('click', handleUnlock);
         
-        // Initialize
         initLockScreen();
         if (!isSessionValid()) {
             pinInputs[0].focus();
@@ -1177,6 +1318,16 @@
         async function handleFiles(files) {
             if (files.length === 0) return;
             
+            if (!isDBReady) {
+                showToast('Database not ready. Please wait...', 'warning');
+                try {
+                    await initDB();
+                } catch (error) {
+                    showToast('Failed to initialize database. Please refresh the page.', 'error');
+                    return;
+                }
+            }
+            
             setLoading(true, 'Uploading files...');
             
             try {
@@ -1184,23 +1335,28 @@
                 let successCount = 0;
                 
                 for (let file of files) {
-                    if (shouldConvert) {
-                        const canConvert = await isConvertible(file);
-                        if (canConvert) {
-                            setLoadingText(`Converting ${file.name}...`);
-                            const convertedFile = await convertFile(file);
-                            if (convertedFile) {
-                                await uploadFile(convertedFile, true);
+                    try {
+                        if (shouldConvert) {
+                            const canConvert = isConvertible(file);
+                            if (canConvert) {
+                                setLoadingText(`Converting ${file.name}...`);
+                                const convertedFile = await convertFile(file);
+                                if (convertedFile) {
+                                    await uploadFile(convertedFile, true);
+                                    successCount++;
+                                }
+                            } else {
+                                showToast(`Cannot convert ${file.name} to selected format`, 'warning');
+                                await uploadFile(file, false);
                                 successCount++;
                             }
                         } else {
-                            showToast(`Cannot convert ${file.name} to selected format`, 'warning');
                             await uploadFile(file, false);
                             successCount++;
                         }
-                    } else {
-                        await uploadFile(file, false);
-                        successCount++;
+                    } catch (fileError) {
+                        console.error(`Error processing ${file.name}:`, fileError);
+                        showToast(`Error uploading ${file.name}`, 'error');
                     }
                 }
                 
@@ -1210,7 +1366,7 @@
                 }
             } catch (error) {
                 console.error('Upload error:', error);
-                showToast('Error uploading files. Please try again.', 'error');
+                showToast('Error uploading files: ' + error.message, 'error');
             } finally {
                 setLoading(false);
                 fileInput.value = '';
@@ -1251,8 +1407,7 @@
                 }
             } catch (error) {
                 console.error('Conversion error:', error);
-                showToast(`Failed to convert ${file.name}`, 'error');
-                return null;
+                throw error;
             }
         }
         
@@ -1263,34 +1418,42 @@
                 reader.onload = (e) => {
                     const img = new Image();
                     img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        
-                        let mimeType, quality, ext;
-                        
-                        if (format === 'png') {
-                            mimeType = 'image/png';
-                            quality = 1.0;
-                            ext = 'png';
-                        } else if (format === 'jpg-100') {
-                            mimeType = 'image/jpeg';
-                            quality = 1.0;
-                            ext = 'jpg';
-                        } else if (format === 'webp-100') {
-                            mimeType = 'image/webp';
-                            quality = 1.0;
-                            ext = 'webp';
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            
+                            let mimeType, quality, ext;
+                            
+                            if (format === 'png') {
+                                mimeType = 'image/png';
+                                quality = 1.0;
+                                ext = 'png';
+                            } else if (format === 'jpg-100') {
+                                mimeType = 'image/jpeg';
+                                quality = 1.0;
+                                ext = 'jpg';
+                            } else if (format === 'webp-100') {
+                                mimeType = 'image/webp';
+                                quality = 1.0;
+                                ext = 'webp';
+                            }
+                            
+                            canvas.toBlob((blob) => {
+                                if (blob) {
+                                    const newFileName = file.name.replace(/\.[^/.]+$/, `.${ext}`);
+                                    const newFile = new File([blob], newFileName, { type: mimeType });
+                                    resolve(newFile);
+                                } else {
+                                    reject(new Error('Failed to create blob'));
+                                }
+                            }, mimeType, quality);
+                        } catch (error) {
+                            reject(error);
                         }
-                        
-                        canvas.toBlob((blob) => {
-                            const newFileName = file.name.replace(/\.[^/.]+$/, `.${ext}`);
-                            const newFile = new File([blob], newFileName, { type: mimeType });
-                            resolve(newFile);
-                        }, mimeType, quality);
                     };
                     img.onerror = () => reject(new Error('Failed to load image'));
                     img.src = e.target.result;
@@ -1358,6 +1521,7 @@
                 reader.onload = async (e) => {
                     try {
                         const fileData = {
+                            id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                             name: file.name,
                             size: file.size,
                             type: file.type,
@@ -1366,10 +1530,10 @@
                             converted: wasConverted
                         };
                         
-                        const fileId = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                        await window.storage.set(fileId, JSON.stringify(fileData), true);
+                        await saveFile(fileData);
                         resolve();
                     } catch (error) {
+                        console.error('Save error:', error);
                         reject(error);
                     }
                 };
@@ -1380,12 +1544,17 @@
         }
         
         async function loadFiles() {
+            if (!isDBReady) {
+                console.log('Database not ready for loading files');
+                return;
+            }
+            
             setLoading(true, 'Loading files...');
             
             try {
-                const result = await window.storage.list('file_', true);
+                const files = await getAllFiles();
                 
-                if (!result || !result.keys || result.keys.length === 0) {
+                if (!files || files.length === 0) {
                     filesGrid.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-icon">📁</div>
@@ -1397,26 +1566,13 @@
                     return;
                 }
                 
-                const files = [];
-                for (let key of result.keys) {
-                    try {
-                        const fileResult = await window.storage.get(key, true);
-                        if (fileResult && fileResult.value) {
-                            const fileData = JSON.parse(fileResult.value);
-                            files.push({ id: key, ...fileData });
-                        }
-                    } catch (e) {
-                        console.error('Error loading file:', key, e);
-                    }
-                }
-                
                 files.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
                 
                 displayFiles(files);
                 fileCountEl.textContent = `${files.length} file${files.length !== 1 ? 's' : ''}`;
             } catch (error) {
                 console.error('Error loading files:', error);
-                showToast('Error loading files', 'error');
+                showToast('Error loading files: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
@@ -1443,10 +1599,10 @@
                         <span>${new Date(file.uploadedAt).toLocaleDateString()}</span>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-download" onclick="downloadFile('${file.id}', '${file.name.replace(/'/g, "\\'")}')">
+                        <button class="btn btn-download" onclick="downloadFileById('${file.id}', '${file.name.replace(/'/g, "\\'")}')">
                             ⬇️ Download
                         </button>
-                        <button class="btn btn-delete" onclick="deleteFile('${file.id}')">
+                        <button class="btn btn-delete" onclick="deleteFileById('${file.id}')">
                             🗑️
                         </button>
                     </div>
@@ -1454,16 +1610,14 @@
             `).join('');
         }
         
-        async function downloadFile(fileId, fileName) {
+        async function downloadFileById(fileId, fileName) {
             setLoading(true, 'Preparing download...');
             
             try {
-                const result = await window.storage.get(fileId, true);
-                if (!result || !result.value) {
+                const fileData = await getFile(fileId);
+                if (!fileData) {
                     throw new Error('File not found');
                 }
-                
-                const fileData = JSON.parse(result.value);
                 
                 const link = document.createElement('a');
                 link.href = fileData.data;
@@ -1475,24 +1629,24 @@
                 showToast('File downloaded successfully!');
             } catch (error) {
                 console.error('Download error:', error);
-                showToast('Error downloading file. Please try again.', 'error');
+                showToast('Error downloading file: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
         }
         
-        async function deleteFile(fileId) {
+        async function deleteFileById(fileId) {
             if (!confirm('Are you sure you want to delete this file?')) return;
             
             setLoading(true, 'Deleting file...');
             
             try {
-                await window.storage.delete(fileId, true);
+                await deleteFile(fileId);
                 showToast('File deleted successfully!');
                 await loadFiles();
             } catch (error) {
                 console.error('Delete error:', error);
-                showToast('Error deleting file. Please try again.', 'error');
+                showToast('Error deleting file: ' + error.message, 'error');
             } finally {
                 setLoading(false);
             }
@@ -1502,12 +1656,12 @@
             loadingText.textContent = text;
         }
         
-        window.downloadFile = downloadFile;
-        window.deleteFile = deleteFile;
+        window.downloadFileById = downloadFileById;
+        window.deleteFileById = deleteFileById;
         
-        if (isSessionValid()) {
-            loadFiles();
-        }
+        // Log initialization
+        console.log('CloudBox initialized');
+        console.log('IndexedDB supported:', !!window.indexedDB);
     </script>
 </body>
 </html>
