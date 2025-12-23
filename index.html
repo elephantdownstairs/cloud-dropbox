@@ -67,6 +67,19 @@
             font-family: 'JetBrains Mono', monospace;
         }
         
+        .sync-id {
+            display: block;
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            word-break: break-all;
+        }
+        
         .upload-section {
             background: var(--surface);
             border: 2px dashed var(--border);
@@ -392,6 +405,7 @@
             <div class="logo">📦 CloudBox</div>
             <div class="tagline">Simple file storage & converter</div>
             <div class="sync-badge">☁️ Cloud Synced Across Devices</div>
+            <div class="sync-id">Sync ID: <span id="syncId">Loading...</span></div>
         </div>
         
         <div class="upload-section" id="uploadZone">
@@ -442,57 +456,66 @@
         const DEBUG = true;
         const log = (...args) => DEBUG && console.log('[CloudBox]', ...args);
         
-        // JSONBin.io API - Free cloud storage, works immediately, no signup
-        const JSONBIN_API = 'https://api.jsonbin.io/v3';
-        const BIN_ID_KEY = 'cloudbox_bin_id';
+        // Simple cloud storage using kvdb.io (free, no auth needed)
+        const KVDB_BUCKET = 'cloudbox-main-bucket';
         
-        // Get or create bin ID
-        function getBinId() {
-            let binId = localStorage.getItem(BIN_ID_KEY);
-            if (!binId) {
-                // Generate unique bin ID for this CloudBox
-                binId = 'cloudbox_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem(BIN_ID_KEY, binId);
-                log('Created new Bin ID:', binId);
+        // Get or create sync ID
+        function getSyncId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            let syncId = urlParams.get('sync');
+            
+            if (!syncId) {
+                syncId = localStorage.getItem('cloudbox_sync_id');
             }
-            return binId;
+            
+            if (!syncId) {
+                syncId = 'cb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('cloudbox_sync_id', syncId);
+                
+                // Update URL without reload
+                const newUrl = window.location.pathname + '?sync=' + syncId;
+                window.history.replaceState({}, '', newUrl);
+            } else {
+                localStorage.setItem('cloudbox_sync_id', syncId);
+            }
+            
+            return syncId;
         }
         
-        const BIN_ID = getBinId();
+        const SYNC_ID = getSyncId();
+        document.getElementById('syncId').textContent = SYNC_ID;
         
-        // API Functions
+        // Cloud storage functions
         async function loadFilesFromCloud() {
             try {
-                log('Loading files from cloud...');
-                showLoading('Loading files from cloud...');
+                log('Loading files from cloud for ID:', SYNC_ID);
                 
-                const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
-                    method: 'GET',
-                    headers: {
-                        'X-Access-Key': '$2a$10$placeholder' // JSONBin works without auth for public bins
-                    }
+                const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${SYNC_ID}`, {
+                    method: 'GET'
                 });
                 
                 if (response.status === 404) {
-                    // Bin doesn't exist yet, create it
-                    log('Bin not found, will create on first upload');
+                    log('No cloud data yet, starting fresh');
                     return [];
                 }
                 
                 if (!response.ok) {
-                    throw new Error('Failed to load: ' + response.status);
+                    throw new Error('Load failed: ' + response.status);
                 }
                 
-                const data = await response.json();
-                const files = data.record?.files || [];
-                log('Loaded', files.length, 'files from cloud');
-                return files;
+                const text = await response.text();
+                if (!text || text === 'null') {
+                    return [];
+                }
+                
+                const data = JSON.parse(text);
+                log('Loaded', data.length, 'files from cloud');
+                return data;
                 
             } catch (error) {
                 log('Error loading from cloud:', error);
-                showToast('Using offline mode', 'error');
                 // Fallback to localStorage
-                const stored = localStorage.getItem('cloudbox_offline_backup');
+                const stored = localStorage.getItem('cloudbox_backup_' + SYNC_ID);
                 return stored ? JSON.parse(stored) : [];
             }
         }
@@ -501,34 +524,16 @@
             try {
                 log('Saving', files.length, 'files to cloud...');
                 
-                // Also save to localStorage as backup
-                localStorage.setItem('cloudbox_offline_backup', JSON.stringify(files));
+                // Save backup to localStorage
+                localStorage.setItem('cloudbox_backup_' + SYNC_ID, JSON.stringify(files));
                 
-                const payload = { files: files };
-                
-                // Try to update existing bin
-                let response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
-                    method: 'PUT',
+                const response = await fetch(`https://kvdb.io/${KVDB_BUCKET}/${SYNC_ID}`, {
+                    method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Access-Key': '$2a$10$placeholder'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(files)
                 });
-                
-                // If bin doesn't exist, create it
-                if (response.status === 404) {
-                    log('Creating new bin...');
-                    response = await fetch(`${JSONBIN_API}/b`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Bin-Name': BIN_ID,
-                            'X-Access-Key': '$2a$10$placeholder'
-                        },
-                        body: JSON.stringify(payload)
-                    });
-                }
                 
                 if (!response.ok) {
                     throw new Error('Save failed: ' + response.status);
@@ -539,7 +544,7 @@
                 
             } catch (error) {
                 log('Error saving to cloud:', error);
-                showToast('Saved locally only', 'error');
+                showToast('Saved locally, cloud sync failed', 'error');
                 return false;
             }
         }
@@ -556,16 +561,16 @@
         const loading = document.getElementById('loading');
         const loadingText = document.getElementById('loadingText');
         
-        log('CloudBox initialized with Bin ID:', BIN_ID);
+        log('CloudBox initialized with Sync ID:', SYNC_ID);
         
         // Global files array
         let filesData = [];
         
         // Toggle conversion
         convertToggle.addEventListener('click', () => {
-            log('Toggle clicked');
-            convertToggle.classList.toggle('active');
+            const isActive = convertToggle.classList.toggle('active');
             convertOptions.classList.toggle('active');
+            log('Conversion toggled:', isActive ? 'ON' : 'OFF');
         });
         
         // Upload zone click
@@ -610,25 +615,36 @@
             showLoading('Processing files...');
             
             const shouldConvert = convertToggle.classList.contains('active');
-            log('Should convert:', shouldConvert);
+            log('Should convert:', shouldConvert, '| Format:', formatSelect.value);
             
             let successCount = 0;
             
             for (let i = 0; i < fileList.length; i++) {
                 const file = fileList[i];
-                log(`Processing file ${i + 1}/${fileList.length}:`, file.name);
+                log(`\n=== Processing file ${i + 1}/${fileList.length}: ${file.name} ===`);
+                log('Original - Name:', file.name, '| Type:', file.type, '| Size:', file.size);
                 
                 try {
                     let processedFile = file;
                     let wasConverted = false;
                     
                     // Check if conversion is needed
-                    if (shouldConvert && canConvert(file)) {
-                        showLoading(`Converting ${file.name}...`);
-                        log('Converting file:', file.name);
-                        processedFile = await convertFile(file);
-                        wasConverted = true;
-                        log('Conversion successful:', processedFile.name);
+                    if (shouldConvert) {
+                        const canConv = canConvert(file);
+                        log('Can convert?', canConv);
+                        
+                        if (canConv) {
+                            showLoading(`Converting ${file.name}...`);
+                            log('🔄 Starting conversion...');
+                            processedFile = await convertFile(file);
+                            wasConverted = true;
+                            log('✅ Conversion complete!');
+                            log('Converted - Name:', processedFile.name, '| Type:', processedFile.type, '| Size:', processedFile.size);
+                        } else {
+                            log('⚠️ File cannot be converted to', formatSelect.value);
+                        }
+                    } else {
+                        log('ℹ️ Conversion toggle is OFF, skipping conversion');
                     }
                     
                     // Read file
@@ -648,10 +664,10 @@
                     
                     filesData.push(fileData);
                     successCount++;
-                    log('File added:', fileData.name);
+                    log('✅ File added to queue:', fileData.name, '| Converted:', wasConverted);
                     
                 } catch (error) {
-                    log('Error processing file:', file.name, error);
+                    log('❌ Error processing file:', file.name, error);
                     showToast('Error: ' + file.name, 'error');
                 }
             }
@@ -673,6 +689,8 @@
             const format = formatSelect.value;
             const type = file.type;
             
+            log('Checking conversion: file type =', type, ', target format =', format);
+            
             if (['png', 'jpg', 'webp'].includes(format)) {
                 return type.startsWith('image/');
             }
@@ -689,6 +707,7 @@
         // Convert file
         async function convertFile(file) {
             const format = formatSelect.value;
+            log('Converting to format:', format);
             
             if (['png', 'jpg', 'webp'].includes(format)) {
                 return await convertImage(file, format);
@@ -704,18 +723,22 @@
         // Convert image
         function convertImage(file, format) {
             return new Promise((resolve, reject) => {
+                log('convertImage: Reading file...');
                 const reader = new FileReader();
                 
                 reader.onload = (e) => {
+                    log('convertImage: File read, creating image...');
                     const img = new Image();
                     
                     img.onload = () => {
+                        log('convertImage: Image loaded, size:', img.width, 'x', img.height);
                         const canvas = document.createElement('canvas');
                         canvas.width = img.width;
                         canvas.height = img.height;
                         
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0);
+                        log('convertImage: Drew image on canvas');
                         
                         let mimeType, ext;
                         if (format === 'png') {
@@ -729,21 +752,31 @@
                             ext = 'webp';
                         }
                         
+                        log('convertImage: Converting to', mimeType, 'with quality 1.0');
                         canvas.toBlob((blob) => {
                             if (blob) {
                                 const newName = file.name.replace(/\.[^.]+$/, '.' + ext);
-                                resolve(new File([blob], newName, { type: mimeType }));
+                                const newFile = new File([blob], newName, { type: mimeType });
+                                log('convertImage: Success! New file:', newName, blob.size, 'bytes');
+                                resolve(newFile);
                             } else {
+                                log('convertImage: Failed to create blob');
                                 reject(new Error('Conversion failed'));
                             }
                         }, mimeType, 1.0);
                     };
                     
-                    img.onerror = () => reject(new Error('Image load failed'));
+                    img.onerror = (err) => {
+                        log('convertImage: Image load error:', err);
+                        reject(new Error('Image load failed'));
+                    };
                     img.src = e.target.result;
                 };
                 
-                reader.onerror = () => reject(new Error('File read failed'));
+                reader.onerror = (err) => {
+                    log('convertImage: File read error:', err);
+                    reject(new Error('File read failed'));
+                };
                 reader.readAsDataURL(file);
             });
         }
@@ -758,6 +791,7 @@
                     
                     img.onload = () => {
                         try {
+                            log('convertToPDF: Creating PDF...');
                             const { jsPDF } = window.jspdf;
                             const orientation = img.width > img.height ? 'l' : 'p';
                             const pdf = new jsPDF(orientation, 'px', [img.width, img.height]);
@@ -765,8 +799,10 @@
                             
                             const pdfBlob = pdf.output('blob');
                             const newName = file.name.replace(/\.[^.]+$/, '.pdf');
+                            log('convertToPDF: Success!', newName);
                             resolve(new File([pdfBlob], newName, { type: 'application/pdf' }));
                         } catch (error) {
+                            log('convertToPDF: Error:', error);
                             reject(error);
                         }
                     };
@@ -786,8 +822,10 @@
                 const reader = new FileReader();
                 
                 reader.onload = (e) => {
+                    log('convertToText: Converting to text...');
                     const blob = new Blob([e.target.result], { type: 'text/plain' });
                     const newName = file.name.replace(/\.[^.]+$/, '.txt');
+                    log('convertToText: Success!', newName);
                     resolve(new File([blob], newName, { type: 'text/plain' }));
                 };
                 
@@ -936,22 +974,31 @@
         // Initialize - Load files from cloud
         (async function init() {
             log('Initializing CloudBox...');
-            filesData = await loadFilesFromCloud();
-            displayFiles();
+            try {
+                filesData = await loadFilesFromCloud();
+                displayFiles();
+            } catch (error) {
+                log('Init error:', error);
+                displayFiles();
+            }
             hideLoading();
             log('CloudBox ready!');
         })();
         
-        // Auto-refresh every 10 seconds to sync with other devices
+        // Auto-refresh every 15 seconds to sync with other devices
         setInterval(async () => {
-            log('Auto-syncing...');
-            const newFiles = await loadFilesFromCloud();
-            if (JSON.stringify(newFiles) !== JSON.stringify(filesData)) {
-                filesData = newFiles;
-                displayFiles();
-                log('Files synced from cloud');
+            try {
+                log('Auto-syncing...');
+                const newFiles = await loadFilesFromCloud();
+                if (JSON.stringify(newFiles) !== JSON.stringify(filesData)) {
+                    filesData = newFiles;
+                    displayFiles();
+                    log('Files synced from cloud');
+                }
+            } catch (error) {
+                log('Auto-sync error:', error);
             }
-        }, 10000);
+        }, 15000);
     </script>
 </body>
 </html>
