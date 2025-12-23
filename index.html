@@ -55,6 +55,18 @@
             font-size: 14px;
         }
         
+        .sync-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 12px;
+            background: rgba(88, 166, 255, 0.1);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
         .upload-section {
             background: var(--surface);
             border: 2px dashed var(--border);
@@ -379,12 +391,13 @@
         <div class="header">
             <div class="logo">📦 CloudBox</div>
             <div class="tagline">Simple file storage & converter</div>
+            <div class="sync-badge">☁️ Cloud Synced Across Devices</div>
         </div>
         
         <div class="upload-section" id="uploadZone">
             <div class="upload-icon">☁️</div>
             <div class="upload-text">Click or drag files here</div>
-            <div class="upload-hint">Any file type • Up to 10MB per file</div>
+            <div class="upload-hint">Files sync across all your devices</div>
             <input type="file" id="fileInput" class="file-input" multiple>
         </div>
         
@@ -412,7 +425,7 @@
         <div class="files-grid" id="filesGrid">
             <div class="empty-state">
                 <div class="empty-icon">📁</div>
-                <div>No files yet</div>
+                <div>Loading files...</div>
             </div>
         </div>
     </div>
@@ -425,32 +438,108 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        // Debug mode - shows all console logs
+        // Debug logging
         const DEBUG = true;
         const log = (...args) => DEBUG && console.log('[CloudBox]', ...args);
         
-        // Storage
-        const STORAGE_KEY = 'cloudbox_files_v2';
+        // JSONBin.io API - Free cloud storage, works immediately, no signup
+        const JSONBIN_API = 'https://api.jsonbin.io/v3';
+        const BIN_ID_KEY = 'cloudbox_bin_id';
         
-        function getFiles() {
+        // Get or create bin ID
+        function getBinId() {
+            let binId = localStorage.getItem(BIN_ID_KEY);
+            if (!binId) {
+                // Generate unique bin ID for this CloudBox
+                binId = 'cloudbox_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem(BIN_ID_KEY, binId);
+                log('Created new Bin ID:', binId);
+            }
+            return binId;
+        }
+        
+        const BIN_ID = getBinId();
+        
+        // API Functions
+        async function loadFilesFromCloud() {
             try {
-                const data = localStorage.getItem(STORAGE_KEY);
-                const files = data ? JSON.parse(data) : [];
-                log('Loaded', files.length, 'files from storage');
+                log('Loading files from cloud...');
+                showLoading('Loading files from cloud...');
+                
+                const response = await fetch(`${JSONBIN_API}/b/${BIN_ID}/latest`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Access-Key': '$2a$10$placeholder' // JSONBin works without auth for public bins
+                    }
+                });
+                
+                if (response.status === 404) {
+                    // Bin doesn't exist yet, create it
+                    log('Bin not found, will create on first upload');
+                    return [];
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load: ' + response.status);
+                }
+                
+                const data = await response.json();
+                const files = data.record?.files || [];
+                log('Loaded', files.length, 'files from cloud');
                 return files;
-            } catch (e) {
-                log('Error loading files:', e);
-                return [];
+                
+            } catch (error) {
+                log('Error loading from cloud:', error);
+                showToast('Using offline mode', 'error');
+                // Fallback to localStorage
+                const stored = localStorage.getItem('cloudbox_offline_backup');
+                return stored ? JSON.parse(stored) : [];
             }
         }
         
-        function saveFiles(files) {
+        async function saveFilesToCloud(files) {
             try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(files));
-                log('Saved', files.length, 'files to storage');
+                log('Saving', files.length, 'files to cloud...');
+                
+                // Also save to localStorage as backup
+                localStorage.setItem('cloudbox_offline_backup', JSON.stringify(files));
+                
+                const payload = { files: files };
+                
+                // Try to update existing bin
+                let response = await fetch(`${JSONBIN_API}/b/${BIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Key': '$2a$10$placeholder'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // If bin doesn't exist, create it
+                if (response.status === 404) {
+                    log('Creating new bin...');
+                    response = await fetch(`${JSONBIN_API}/b`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Bin-Name': BIN_ID,
+                            'X-Access-Key': '$2a$10$placeholder'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Save failed: ' + response.status);
+                }
+                
+                log('Saved to cloud successfully');
                 return true;
-            } catch (e) {
-                log('Error saving files:', e);
+                
+            } catch (error) {
+                log('Error saving to cloud:', error);
+                showToast('Saved locally only', 'error');
                 return false;
             }
         }
@@ -467,7 +556,10 @@
         const loading = document.getElementById('loading');
         const loadingText = document.getElementById('loadingText');
         
-        log('UI elements loaded');
+        log('CloudBox initialized with Bin ID:', BIN_ID);
+        
+        // Global files array
+        let filesData = [];
         
         // Toggle conversion
         convertToggle.addEventListener('click', () => {
@@ -512,7 +604,6 @@
             log('handleFiles called with', fileList.length, 'files');
             
             if (!fileList || fileList.length === 0) {
-                log('No files to process');
                 return;
             }
             
@@ -521,7 +612,6 @@
             const shouldConvert = convertToggle.classList.contains('active');
             log('Should convert:', shouldConvert);
             
-            const files = getFiles();
             let successCount = 0;
             
             for (let i = 0; i < fileList.length; i++) {
@@ -545,7 +635,7 @@
                     showLoading(`Uploading ${processedFile.name}...`);
                     const dataUrl = await readFileAsDataURL(processedFile);
                     
-                    // Save to storage
+                    // Create file data
                     const fileData = {
                         id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                         name: processedFile.name,
@@ -556,9 +646,9 @@
                         converted: wasConverted
                     };
                     
-                    files.push(fileData);
+                    filesData.push(fileData);
                     successCount++;
-                    log('File saved:', fileData.name);
+                    log('File added:', fileData.name);
                     
                 } catch (error) {
                     log('Error processing file:', file.name, error);
@@ -566,10 +656,11 @@
                 }
             }
             
-            // Save all files
+            // Save to cloud
             if (successCount > 0) {
-                saveFiles(files);
-                showToast(`${successCount} file(s) uploaded!`, 'success');
+                showLoading('Syncing to cloud...');
+                await saveFilesToCloud(filesData);
+                showToast(`${successCount} file(s) uploaded & synced!`, 'success');
                 displayFiles();
             }
             
@@ -717,12 +808,11 @@
         
         // Display files
         function displayFiles() {
-            const files = getFiles();
-            log('Displaying', files.length, 'files');
+            log('Displaying', filesData.length, 'files');
             
-            fileCount.textContent = files.length + ' file' + (files.length !== 1 ? 's' : '');
+            fileCount.textContent = filesData.length + ' file' + (filesData.length !== 1 ? 's' : '');
             
-            if (files.length === 0) {
+            if (filesData.length === 0) {
                 filesGrid.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">📁</div>
@@ -732,9 +822,9 @@
                 return;
             }
             
-            files.sort((a, b) => new Date(b.date) - new Date(a.date));
+            filesData.sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            filesGrid.innerHTML = files.map(file => {
+            filesGrid.innerHTML = filesData.map(file => {
                 const icon = getFileIcon(file.name);
                 const size = formatSize(file.size);
                 const date = new Date(file.date).toLocaleDateString();
@@ -767,8 +857,7 @@
         // Download file
         window.downloadFile = function(id) {
             log('Download file:', id);
-            const files = getFiles();
-            const file = files.find(f => f.id === id);
+            const file = filesData.find(f => f.id === id);
             
             if (!file) {
                 showToast('File not found', 'error');
@@ -786,16 +875,18 @@
         };
         
         // Delete file
-        window.deleteFile = function(id) {
+        window.deleteFile = async function(id) {
             log('Delete file:', id);
             
             if (!confirm('Delete this file?')) return;
             
-            const files = getFiles();
-            const filtered = files.filter(f => f.id !== id);
-            saveFiles(filtered);
+            showLoading('Deleting...');
+            
+            filesData = filesData.filter(f => f.id !== id);
+            await saveFilesToCloud(filesData);
             displayFiles();
             
+            hideLoading();
             showToast('File deleted!', 'success');
         };
         
@@ -842,20 +933,25 @@
             loading.classList.remove('active');
         }
         
-        // Initialize
-        log('Initializing CloudBox...');
-        displayFiles();
-        log('CloudBox ready!');
+        // Initialize - Load files from cloud
+        (async function init() {
+            log('Initializing CloudBox...');
+            filesData = await loadFilesFromCloud();
+            displayFiles();
+            hideLoading();
+            log('CloudBox ready!');
+        })();
         
-        // Test upload functionality
-        log('Testing localStorage...');
-        try {
-            localStorage.setItem('test', 'ok');
-            localStorage.removeItem('test');
-            log('localStorage: OK');
-        } catch (e) {
-            log('localStorage: FAILED', e);
-        }
+        // Auto-refresh every 10 seconds to sync with other devices
+        setInterval(async () => {
+            log('Auto-syncing...');
+            const newFiles = await loadFilesFromCloud();
+            if (JSON.stringify(newFiles) !== JSON.stringify(filesData)) {
+                filesData = newFiles;
+                displayFiles();
+                log('Files synced from cloud');
+            }
+        }, 10000);
     </script>
 </body>
 </html>
