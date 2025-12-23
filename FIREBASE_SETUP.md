@@ -11,28 +11,34 @@ Your CloudBox now uses Firebase for cloud storage, which means files sync across
 5. Click **"Create project"**
 6. Wait for it to finish, then click **"Continue"**
 
-## 🌐 Step 2: Set Up Realtime Database
+## 🌐 Step 2: Set Up Firebase Storage (for files)
 
-1. In your Firebase project, click **"Realtime Database"** in the left menu
+1. In your Firebase project, click **"Storage"** in the left menu
+2. Click **"Get started"**
+3. **Security rules**: Select **"Start in test mode"**
+4. **Location**: Choose the closest region to you
+5. Click **"Done"**
+
+## 📊 Step 3: Set Up Realtime Database (for metadata)
+
+1. Click **"Realtime Database"** in the left menu
 2. Click **"Create Database"**
-3. **Location**: Choose the closest region to you
-4. **Security rules**: Select **"Start in test mode"** (we'll secure it with rules later)
+3. **Location**: Choose the same region as Storage
+4. **Security rules**: Select **"Start in test mode"**
 5. Click **"Enable"**
 
-## 🔒 Step 3: Configure Security Rules
+## 🔒 Step 4: Configure Security Rules
 
-1. Still in Realtime Database, click the **"Rules"** tab
-2. Replace the rules with this:
+### Storage Rules:
+1. In **Storage**, click the **"Rules"** tab
+2. Replace with:
 
-```json
-{
-  "rules": {
-    "files": {
-      ".read": true,
-      ".write": true,
-      "$fileId": {
-        ".validate": "newData.hasChildren(['id', 'name', 'size', 'type', 'data', 'uploadedAt'])"
-      }
+```
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /files/{fileId} {
+      allow read, write: if true;
     }
   }
 }
@@ -40,9 +46,26 @@ Your CloudBox now uses Firebase for cloud storage, which means files sync across
 
 3. Click **"Publish"**
 
-⚠️ **Note**: These rules allow anyone to read/write. This is okay since your CloudBox is PIN-protected, but for extra security, you can set up Firebase Authentication later.
+### Database Rules:
+1. In **Realtime Database**, click the **"Rules"** tab
+2. Replace with:
 
-## 🔑 Step 4: Get Your Firebase Config
+```json
+{
+  "rules": {
+    "files": {
+      ".read": true,
+      ".write": true
+    }
+  }
+}
+```
+
+3. Click **"Publish"**
+
+⚠️ **Note**: These rules allow anyone to read/write. This is okay since your CloudBox is PIN-protected. For better security, set up Firebase Authentication later.
+
+## 🔑 Step 5: Get Your Firebase Config
 
 1. Click the **⚙️ gear icon** (top left) → **"Project settings"**
 2. Scroll down to **"Your apps"** section
@@ -66,7 +89,7 @@ const firebaseConfig = {
 };
 ```
 
-## 📝 Step 5: Update Your index.html
+## 📝 Step 6: Update Your index.html
 
 1. Open your `index.html` file
 2. Find this section (around line 870):
@@ -86,7 +109,7 @@ const firebaseConfig = {
 3. **Replace it** with YOUR Firebase config from Step 4
 4. **Save the file**
 
-## 🎯 Step 6: Upload to GitHub
+## 🎯 Step 7: Upload to GitHub
 
 1. Go to your GitHub repository
 2. Upload the updated `index.html`
@@ -119,12 +142,21 @@ const firebaseConfig = {
 
 ## 💰 Firebase Free Tier Limits
 
-Firebase Realtime Database is FREE with these limits:
-- **Storage**: 1 GB
-- **Download**: 10 GB/month
-- **Connections**: 100 simultaneous
+Firebase is FREE with generous limits:
+- **Storage**: 5 GB
+- **Download**: 1 GB/day
+- **Upload**: 1 GB/day
+- **Operations**: 50k reads, 20k writes per day
 
-This is MORE than enough for personal use! You can store thousands of files.
+This is MORE than enough for personal use!
+
+## ⚡ Performance
+
+**This version is MUCH FASTER** than the previous one because:
+- Files stored directly in Firebase Storage (not base64 encoded)
+- Only metadata in Realtime Database (not the entire file)
+- Faster uploads, faster downloads
+- No browser memory issues with large files
 
 ## 🔐 Security Notes
 
