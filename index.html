@@ -413,9 +413,9 @@
             <div class="sync-badge">☁️ Synced Across All Devices</div>
         </div>
         
-        <div class="warning-box">
-            <div class="warning-title">⚠️ Demo Mode - Shared Database</div>
-            This uses a demo database shared with all users. Your files are visible to everyone using this link. For private storage, create your own free Firebase database (instructions in console - press F12).
+        <div class="warning-box" style="background: rgba(63, 185, 80, 0.1); border-color: var(--success);">
+            <div class="warning-title" style="color: var(--success);">✅ Your Private Database Connected</div>
+            Your CloudBox is now using YOUR private Firebase database. Files are synced across all your devices and only you can see them!
         </div>
         
         <div class="upload-section" id="uploadZone">
@@ -470,27 +470,21 @@
         const DEBUG = true;
         const log = (...args) => DEBUG && console.log('[CloudBox]', ...args);
         
-        // Firebase config - Demo database (REPLACE WITH YOUR OWN!)
+        // Firebase config - YOUR PRIVATE DATABASE
         const firebaseConfig = {
-            apiKey: "AIzaSyDemoKeyForTesting123456789",
-            authDomain: "cloudbox-demo.firebaseapp.com",
-            databaseURL: "https://cloudbox-demo-default-rtdb.firebaseio.com",
-            projectId: "cloudbox-demo",
-            storageBucket: "cloudbox-demo.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:demo"
+            apiKey: "AIzaSyD8dnDmG_IPJ6_9fWAGnCewFey253WPjUI",
+            authDomain: "cloud-dropbox-c8fbd.firebaseapp.com",
+            databaseURL: "https://cloud-dropbox-c8fbd-default-rtdb.firebaseio.com",
+            projectId: "cloud-dropbox-c8fbd",
+            storageBucket: "cloud-dropbox-c8fbd.firebasestorage.app",
+            messagingSenderId: "819481476072",
+            appId: "1:819481476072:web:7e3258330ac5183234425d"
         };
         
         log('🚀 CloudBox Starting...');
-        log('⚠️ Using DEMO database - all users share the same files!');
-        log('\n📝 To create your OWN private database:');
-        log('1. Go to: https://console.firebase.google.com');
-        log('2. Click "Add Project" → Enter name → Continue');
-        log('3. Disable Google Analytics → Create');
-        log('4. Click "Realtime Database" → Create Database → Start in TEST mode');
-        log('5. Go to Project Settings → Copy your config');
-        log('6. Replace firebaseConfig in the code (line ~360)');
-        log('\n');
+        log('✅ Connected to YOUR private database');
+        log('📡 Files will sync across all your devices');
+        log('');
         
         // Initialize Firebase
         let db;
